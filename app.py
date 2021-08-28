@@ -1,25 +1,53 @@
-from flask import Flask
+from flask import Flask, render_template
+from datetime import datetime
 
-# appインスタンス作成。__name__には__main__が入り、app.py(=起動ファイル)が既定となる。
-app = Flask(__name__)
+app = Flask(__name__)  # flaskアプリ用のインスタンス作成（基準ファイル）
+
+
+@app.template_filter('reverse_name')
+def reverse(name):
+    return name[-1::-1]
+
+
+@app.template_filter('born_year')
+def calcurate_born_year(age):
+    now_timestamp = datetime.now()
+    return str(now_timestamp.year - int(age)) + '年'
+
 
 @app.route('/')
 def index():
-    return '<h1>Hello World</h1>'
+    return render_template('index.html')
 
-@app.route('/hello')
-def hello():
-    return '<h2>Helloooo</h2>'
 
-@app.route('/post/<int:post_id>/<post_name>')
-def show_post(post_id, post_name):
-    print(type(post_name))
-    return f'{post_name}: {post_id}'
+@app.route('/home/<string:user_name>/<int:age>')
+def home(user_name, age):
+    # login_user = user_name
+    login_user = {
+        'name': user_name,
+        'age': age
+    }
+    # 指定のhtmlに引数を渡す
+    return render_template('home.html', user_info=login_user)
 
-@app.route('/user/<string:user_name>/<int:user_no>')
-def show_user(user_name, user_no):
-    user_name_no = user_name + str(user_no)
-    return f'<h1>{user_name_no}</h1>'
+
+class UserInfo:
+    def __init__(self, name, age) -> None:
+        self.name = name
+        self.age = age
+
+
+@app.route('/userlist')
+def user_list():
+    # users = ['Taro', 'Jiro', 'Hanako']
+    users = [
+        UserInfo('Taro', 21),
+        UserInfo('Jiro', 22),
+        UserInfo('Hanako', 23),
+    ]
+    is_login = True
+    return render_template('userlist.html', users=users, is_login=is_login)
+
 
 if __name__ == "__main__":
-    app.run(debug = True)
+    app.run(debug=True)

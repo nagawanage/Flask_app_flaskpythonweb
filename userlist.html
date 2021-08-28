@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}User List{% endblock %}
+{% block content %}
+<ul>
+    {#
+    <h1>先頭の人は、{{users|first}}です。</h1>
+    <h2>sort後先頭の人は、{{users|sort|first}}</h2>
+    <h3>random: {{users|random}}</h3>
+    {% for user in users %}
+    <!-- <li>{{ user }}</li> -->
+    <!-- 自作フィルタ -->
+    <li>{{ user|reverse_name }}</li>
+    {% endfor %}
+    #}
+    {% for user in users %}
+    <li>{{user.name}} {{user.age}} born at {{user.age|born_year}}</li>
+    {% endfor %}
+
+</ul>
+
+{% if is_login %}
+<p>ログイン済みです</p>
+{% else %}
+<p>ログインしていません</p>
+{% endif %}
+{% endblock %}
