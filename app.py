@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, abort
 
 
-app = Flask(__name__)  # flaskアプリ用のインスタンス作成（基準ファイル）
+app = Flask(__name__)
 
 
 @app.route('/')
@@ -11,7 +11,6 @@ def index():
 
 @app.route('/home/<string:user_name>/<int:age>')
 def home(user_name, age):
-    # login_user = user_name
     login_user = {
         'name': user_name,
         'age': age
