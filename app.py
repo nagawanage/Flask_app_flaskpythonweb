@@ -1,18 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, abort
-from datetime import datetime
+
 
 app = Flask(__name__)  # flaskアプリ用のインスタンス作成（基準ファイル）
-
-
-@app.template_filter('reverse_name')
-def reverse(name):
-    return name[-1::-1]
-
-
-@app.template_filter('born_year')
-def calcurate_born_year(age):
-    now_timestamp = datetime.now()
-    return str(now_timestamp.year - int(age)) + '年'
 
 
 @app.route('/')
