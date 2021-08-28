@@ -1,60 +1,40 @@
-from flask import Flask, render_template, redirect, url_for, abort
+from typing import ClassVar
+from flask import Flask, render_template, redirect
+from flask.globals import request
+from wtforms import StringField, SubmitField, IntegerField
+from wtforms.form import Form
+import os
 
 
 app = Flask(__name__)
 
+# os.urandom(16) の結果をコピペ
+app.config['SECRRET_KEY'] = b'\xd8m\x1d\xd2\x0f\xc8\xf2\x1b^R\x8d1\xd6>\x0c\xb0'
 
-@app.route('/')
+
+class UserForm(Form):
+    name = StringField('名前')
+    age = IntegerField('年齢')
+    submit = SubmitField('Submit')
+
+
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
+    name = age = ''
+    form = UserForm(request.form)
 
+    if request.method == 'POST':
+        # ユーザーの入力内容
+        # 型チェック
+        if form.validate():
+            # 取得
+            name = form.name.data
+            age = form.age.data
+            form = UserForm()
+        else:
+            print('入力内容に誤りがあります')
 
-@app.route('/home/<string:user_name>/<int:age>')
-def home(user_name, age):
-    login_user = {
-        'name': user_name,
-        'age': age
-    }
-    # 指定のhtmlに引数を渡す
-    return render_template('home.html', user_info=login_user)
-
-
-class UserInfo:
-    def __init__(self, name, age) -> None:
-        self.name = name
-        self.age = age
-
-
-@app.route('/userlist')
-def user_list():
-    # users = ['Taro', 'Jiro', 'Hanako']
-    users = [
-        UserInfo('Taro', 21),
-        UserInfo('Jiro', 22),
-        UserInfo('Hanako', 23),
-    ]
-    is_login = True
-    return render_template('userlist.html', users=users, is_login=is_login)
-
-
-@app.route('/user/<string:user_name>/<int:age>')
-def user(user_name, age):
-    if user_name in ['Taro', 'Jiro', 'Saburo']:
-        return redirect(url_for('home', user_name=user_name, age=age))
-    else:
-        abort(500, 'そのユーザーはリダイレクトできません。')
-
-
-@app.errorhandler(404)
-def page_not_found(erro):
-    return render_template('not_found.html'), 404
-
-
-@app.errorhandler(500)
-def system_error(error):
-    error_description = error.description
-    return render_template(
-        'system_error.html', error_description=error_description), 500
+    return render_template('index.html', form=form, name=name, age=age)
 
 
 if __name__ == "__main__":

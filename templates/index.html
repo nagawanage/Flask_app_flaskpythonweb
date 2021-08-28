@@ -2,14 +2,25 @@
 {% block title %}Index {{ super() }} {% endblock %}
 {% block content %}
 
-<h1>Hello, HTML</h1>
-<!-- Filter -->
-<h1>{{ "Hello, HTML"|capitalize }}</h1>
-<h1>{{ "Hello, HTML"|title }}</h1>
-<h1>{{ "Hello, HTML"|lower }}</h1>
-<p>{{ "user"|default("not exist") }}</p>
-<p>{{ "Google:
-    https://google.com"|urlize(target='_blank') }}</p>
-<img src="{{url_for('static', filename='images/manchester_u.jpg' )}}" alt="">
+<p>
+    {% if name and age %}
+    名前： {{name}}
+    年齢： {{age}}
+    {% else %}
+    名前、年齢を入力してください
+    {% endif %}
+</p>
+
+<form method="POST">
+    <!--
+    クロスサイトリクエストフォージェリ(CSRF)対策で入力フォームを表示する
+        form.name.label: class UserFormでnameに付けた文字列がラベルとして表示される
+        form.name: 入力フォーム
+    -->
+    {{ form.csrf_token }}
+    {{ form.name.label}} {{ form.name()}}
+    {{ form.age.label}} {{ form.age()}}
+    {{ form.submit() }}
+</form>
 
 {% endblock %}
