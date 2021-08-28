@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, url_for, abort
 from datetime import datetime
 
 app = Flask(__name__)  # flaskアプリ用のインスタンス作成（基準ファイル）
@@ -47,6 +47,26 @@ def user_list():
     ]
     is_login = True
     return render_template('userlist.html', users=users, is_login=is_login)
+
+
+@app.route('/user/<string:user_name>/<int:age>')
+def user(user_name, age):
+    if user_name in ['Taro', 'Jiro', 'Saburo']:
+        return redirect(url_for('home', user_name=user_name, age=age))
+    else:
+        abort(500, 'そのユーザーはリダイレクトできません。')
+
+
+@app.errorhandler(404)
+def page_not_found(erro):
+    return render_template('not_found.html'), 404
+
+
+@app.errorhandler(500)
+def system_error(error):
+    error_description = error.description
+    return render_template(
+        'system_error.html', error_description=error_description), 500
 
 
 if __name__ == "__main__":
