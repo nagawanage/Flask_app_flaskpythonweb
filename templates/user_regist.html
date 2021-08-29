@@ -5,13 +5,13 @@
 
 <form method="POST">
     {{ form.csrf_token }}
-    {{ render_field(form.name) }}
-    {{ render_field(form.age) }}
+    {{ render_field(form.name, size=70) }}
+    {{ render_field(form.age, class='age-class') }}
     {{ render_field(form.password) }}
     {{ render_field(form.birthday) }}
     {{ render_field(form.gender) }}
     {{ render_field(form.major) }}
-    {{ render_field(form.is_japanese) }}
+    {{ render_field(form.is_japanese, checked=true) }}
     {{ render_field(form.message) }}
     {{ form.submit()}}
 </form>
