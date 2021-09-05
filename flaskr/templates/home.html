@@ -1,3 +1,11 @@
-<h1>Home</h1>
-<a href="{{url_for('mysite1.hello')}}">mysite1</a>
-<a href="{{url_for('mysite2.hello')}}">mysite2</a>
+{% extends "base.html" %}
+{% block content %}
+<div>
+    <!-- current_user: models.pyのload_user()で取得 -->
+    {% if current_user.is_authenticated %}
+    <p>ユーザログイン済み {{current_user.username}}</p>
+    {% else %}
+    <p>ログイン or ユーザー登録をしてください</p>
+    {% endif %}
+</div>
+{% endblock %}

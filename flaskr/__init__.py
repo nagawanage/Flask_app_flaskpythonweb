@@ -1,13 +1,31 @@
-# flaskr/__init__.py
+# __ init__.py
+import os
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_login import LoginManager
 
 
-# BluePrintをimport
+# Flask-Loginライブラリとアプリケーションをつなぐ
+login_manager = LoginManager()
+# ログインの関数
+login_manager.login_view = 'app.login'
+# ログインにリダイレクトした際のメッセージ
+login_manager.login_message = 'ログインしてください'
+
+basedir = os.path.abspath(os.path.dirname(__name__))
+db = SQLAlchemy()
+migrate = Migrate()
+
+
 def create_app():
     app = Flask(__name__)
-    from flaskr.mysite1.views import mysite1_bp
-    from flaskr.mysite2.views import mysite2_bp
-    # BluePrintを登録
-    app.register_blueprint(mysite1_bp)
-    app.register_blueprint(mysite2_bp)
+    app.config['SECRET_KEY'] = 'mysite'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    from flaskr.views import bp
+    app.register_blueprint(bp)
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
     return app
