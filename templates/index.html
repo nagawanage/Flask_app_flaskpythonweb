@@ -1,0 +1,22 @@
+{# index.html #}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(function () {
+        //jQueryのbind: 要素をclickしたとき（イベント）に実行させたい関数を紐づけ
+        $('a#calculate').bind('click', function () {
+            //url:_add_numbersにリクエストを送る
+            $.getJSON('/_add_numbers', {
+                a: $('input[name="a"]').val(),
+                b: $('input[name="b"]').val()
+            }, function (data) {
+                //返り値(data)を取得して、id=resultに値を設定する
+                $("#result").text(data.result)
+            });
+        });
+    });
+</script>
+<h1>Jquery Sample</h1>
+<p>
+    <input type="text" size=5 name=a> + <input type="text" size=5 name=b> = <span id=result>?</span>
+</p>
+<a href="#" id=calculate>Calculate</a>
