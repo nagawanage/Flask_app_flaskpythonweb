@@ -117,3 +117,9 @@ class ChangePasswordForm(Form):
 class UserSearchForm(Form):
     username = StringField('名前：', validators=[DataRequired()])
     submit = SubmitField('ユーザ検索')
+
+
+class ConnectForm(Form):
+    connect_condition = HiddenField()
+    to_user_id = HiddenField()
+    submit = SubmitField()

@@ -1,14 +1,14 @@
 from datetime import datetime
 from flask import (
-    Blueprint, abort, request, render_template, redirect, url_for, flash
+    Blueprint, abort, request, render_template, redirect, url_for, flash,
+    session
 )
 from flask_login import login_user, login_required, logout_user, current_user
-from flask_sqlalchemy.model import should_set_tablename
-from flaskr.models import User, PasswordResetToken
+from flaskr.models import User, PasswordResetToken, UserConnect
 from flaskr import db
 from flaskr.forms import (
     LoginForm, RegisterForm, ResetPasswordForm, ForgotPasswordForm, UserForm,
-    ChangePasswordForm, UserSearchForm
+    ChangePasswordForm, UserSearchForm, ConnectForm
 )
 
 
@@ -117,6 +117,7 @@ def user():
         user = User.select_user_by_id(user_id)
         with db.session.begin(subtransactions=True):
             user.username = form.username.data
+            user.email = form.email.data
             file = request.files[form.picture_path.name].read()
             if file:
                 file_name = user_id + '_' + \
@@ -148,11 +149,40 @@ def change_password():
 @login_required
 def user_search():
     form = UserSearchForm(request.form)
+    connect_form = ConnectForm()
+    session['url'] = 'app.user_search'
     users = None
     if request.method == 'POST' and form.validate():
+        # 検索結果のユーザを取得
         username = form.username.data
+        # UserテーブルとUserConnectテーブルを紐付けて、UserConnect.statusを取得
         users = User.search_by_name(username)
-    return render_template('user_search.html', form=form, users=users)
+
+    return render_template(
+        'user_search.html', form=form, connect_form=connect_form, users=users
+    )
+
+
+@bp.route('/connect_user', methods=['POST'])
+@login_required
+def connect_user():
+    form = ConnectForm(request.form)
+    if request.method == 'POST' and form.validate():
+        if form.connect_condition.data == 'connect':
+            new_connect = UserConnect(current_user.get_id(), form.to_user_id.data)
+            with db.session.begin(subtransactions=True):
+                new_connect.create_new_connect()
+            db.session.commit()
+        elif form.connect_condition.data == 'accept':
+            # 相手から自分へのUserConnectを取得
+            connect = UserConnect.select_by_from_user_id(form.to_user_id.data)
+            if connect:
+                with db.session.begin(subtransactions=True):
+                    connect.update_status()  # status: 1 -> 2
+                db.session.commit()
+
+    next_url = session.pop('url', 'app:home')  # sessionから情報取得
+    return redirect(url_for(next_url))
 
 
 @bp.app_errorhandler(404)
