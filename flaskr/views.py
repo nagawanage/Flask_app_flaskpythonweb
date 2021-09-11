@@ -17,7 +17,21 @@ bp = Blueprint('app', __name__, url_prefix='')
 
 @bp.route('/')
 def home():
-    return render_template('home.html')
+    friends = requested_friends = requesting_friends = None
+    connect_form = ConnectForm()
+    session['url'] = 'app.home'
+    if current_user.is_authenticated:
+        friends = User.select_friends()
+        requested_friends = User.select_requested_friends()
+        requesting_friends = User.select_requesting_friends()
+
+    return render_template(
+        'home.html',
+        friends=friends,
+        requested_friends=requested_friends,
+        requesting_friends=requesting_friends,
+        connect_form=connect_form,
+    )
 
 
 @bp.route('/logout')

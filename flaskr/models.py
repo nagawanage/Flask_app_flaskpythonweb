@@ -70,6 +70,59 @@ class User(UserMixin, db.Model):
             user_connect2.status.label('joined_status_from_to'),  # AS
         ).all()
 
+    @classmethod
+    def select_friends(cls):
+        return cls.query.join(
+            UserConnect,
+            or_(
+                # 自分宛て
+                and_(
+                    UserConnect.to_user_id == cls.id,
+                    UserConnect.from_user_id == current_user.get_id(),
+                    UserConnect.status == 2
+                ),
+                # 自分から
+                and_(
+                    UserConnect.from_user_id == cls.id,
+                    UserConnect.to_user_id == current_user.get_id(),
+                    UserConnect.status == 2
+                )
+            )
+        ).with_entities(
+            # 取得カラム
+            cls.id, cls.username, cls.picture_path
+        ).all()
+
+    @classmethod
+    def select_requested_friends(cls):
+        """申請受信中の一覧"""
+        return cls.query.join(
+            UserConnect,
+            and_(
+                UserConnect.from_user_id == cls.id,
+                UserConnect.to_user_id == current_user.get_id(),
+                UserConnect.status == 1
+            )
+        ).with_entities(
+            # 取得カラム
+            cls.id, cls.username, cls.picture_path
+        ).all()
+
+    @classmethod
+    def select_requesting_friends(cls):
+        """申請中の一覧"""
+        return cls.query.join(
+            UserConnect,
+            and_(
+                UserConnect.from_user_id == current_user.get_id(),
+                UserConnect.to_user_id == cls.id,
+                UserConnect.status == 1
+            )
+        ).with_entities(
+            # 取得カラム
+            cls.id, cls.username, cls.picture_path
+        ).all()
+
     def validate_password(self, password):
         return check_password_hash(self.password, password)
 
@@ -102,7 +155,7 @@ class PasswordResetToken(db.Model):
         self.user_id = user_id
         self.expire_at = expire_at
 
-    @classmethod
+    @ classmethod
     def publish_token(cls, user):
         # password設定用のURL生成
         token = str(uuid4())
