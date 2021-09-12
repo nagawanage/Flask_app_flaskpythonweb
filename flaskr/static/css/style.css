@@ -17,7 +17,7 @@
   position: relative;
   background: #b1cbce;
   border-radius: 0.4em;
-  margin: 1px 0;
+  margin-bottom: 20px;
 }
 
 .speech-bubble-dest:after {
@@ -38,7 +38,7 @@
   position: relative;
   background: #71cf9c;
   border-radius: 0.4em;
-  margin: 1px 0;
+  margin-bottom: 20px;
 }
 
 .speech-bubble-self:after {
