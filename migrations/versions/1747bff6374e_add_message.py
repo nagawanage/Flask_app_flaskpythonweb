@@ -1,11 +1,8 @@
-"""fix messages
-;
-q
+"""add message
 
-
-Revision ID: 32d4ebd43b9b
+Revision ID: 1747bff6374e
 Revises: 251d1123fdba
-Create Date: 2021-09-11 22:39:37.984033
+Create Date: 2021-09-12 17:39:17.108636
 
 """
 from alembic import op
@@ -13,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '32d4ebd43b9b'
+revision = '1747bff6374e'
 down_revision = '251d1123fdba'
 branch_labels = None
 depends_on = None
@@ -26,6 +23,7 @@ def upgrade():
     sa.Column('from_user_id', sa.Integer(), nullable=True),
     sa.Column('to_user_id', sa.Integer(), nullable=True),
     sa.Column('is_read', sa.Boolean(), nullable=True),
+    sa.Column('is_checked', sa.Boolean(), nullable=True),
     sa.Column('message', sa.Text(), nullable=True),
     sa.Column('create_at', sa.DateTime(), nullable=True),
     sa.Column('update_at', sa.DateTime(), nullable=True),

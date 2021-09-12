@@ -102,7 +102,7 @@ def reset_password(token):
     return render_template('reset_password.html', form=form)
 
 
-@bp.route('forgot_password', methods=['GET', 'POST'])
+@bp.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     form = ForgotPasswordForm(request.form)
     if request.method == 'POST' and form.validate():
@@ -208,10 +208,22 @@ def message(id):
     form = MessageForm(request.form)
     messages = Message.get_friend_messages(current_user.get_id(), id)
     user = User.select_user_by_id(id)
+    # 未読メッセージのid
     read_message_ids = \
         [message.id for message in messages
             if (not message.is_read) and (message.from_user_id == int(id))]
-
+    # 相手の既読をまだ反映していないメッセージ（＝未チェック）
+    not_checked_message_ids = \
+        [message.id for message in messages
+            if message.is_read
+         and (not message.is_checked)
+         and (message.from_user_id == int(current_user.get_id()))]
+    print(f'{not_checked_message_ids=}')
+    if not_checked_message_ids:
+        with db.session.begin(subtransactions=True):
+            Message.update_is_checked_by_ids(not_checked_message_ids)
+        db.session.commit()
+    # 既読ステータス更新
     if read_message_ids:
         with db.session.begin(subtransactions=True):
             Message.update_is_read_by_ids(read_message_ids)
@@ -242,8 +254,21 @@ def message_ajax():
         with db.session.begin(subtransactions=True):
             Message.update_is_read_by_ids(not_read_message_ids)
         db.session.commit()
-    print(f'{not_read_messages=}')
-    return jsonify(data=make_message_format(user, not_read_messages))
+
+    # 相手の既読をまだ反映していないメッセージ（＝未チェック）
+    not_checked_messages = \
+        Message.select_not_checked_messages(current_user.get_id(), user_id)
+    not_checked_message_ids = \
+        [not_checked_message.id for not_checked_message in not_checked_messages]
+    if not_checked_message_ids:
+        with db.session.begin(subtransactions=True):
+            Message.update_is_checked_by_ids(not_checked_message_ids)
+        db.session.commit()
+
+    return jsonify(
+        data=make_message_format(user, not_read_messages),
+        checked_message_ids=not_checked_message_ids
+    )
 
 
 @bp.app_errorhandler(404)

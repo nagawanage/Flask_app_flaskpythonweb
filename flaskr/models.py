@@ -255,6 +255,7 @@ class Message(db.Model):
         db.Integer, db.ForeignKey('users.id'), index=True
     )
     is_read = db.Column(db.Boolean, default=False)
+    is_checked = db.Column(db.Boolean, default=False)  # 既読を確認したか
     message = db.Column(db.Text)
     create_at = db.Column(db.DateTime, default=datetime.now)
     update_at = db.Column(db.DateTime, default=datetime.now)
@@ -286,8 +287,16 @@ class Message(db.Model):
     def update_is_read_by_ids(cls, ids):
         # IN句
         cls.query.filter(cls.id.in_(ids)).update(
-            {'is_read': 1},
+            {'is_read': 1},  # 1がTrue
             # fetch: update前にselectで更新対象を取得. in_()を使う場合は指定
+            synchronize_session='fetch'
+        )
+
+    @classmethod
+    def update_is_checked_by_ids(cls, ids):
+        # IN句
+        cls.query.filter(cls.id.in_(ids)).update(
+            {'is_checked': 1},
             synchronize_session='fetch'
         )
 
@@ -298,5 +307,16 @@ class Message(db.Model):
                 cls.from_user_id == from_user_id,
                 cls.to_user_id == to_user_id,
                 cls.is_read == 0
+            )
+        ).order_by(cls.id).all()
+
+    @classmethod
+    def select_not_checked_messages(cls, from_user_id, to_user_id):
+        return cls.query.filter(
+            and_(
+                cls.from_user_id == from_user_id,
+                cls.to_user_id == to_user_id,
+                cls.is_read == 1,
+                cls.is_checked == 0
             )
         ).order_by(cls.id).all()

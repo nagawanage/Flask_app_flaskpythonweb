@@ -14,10 +14,17 @@
     });
     user_id = "{{ to_user_id }}";
     function get_new_messages() {
+        //URLからjsonを受け取りdataに格納 -> dataを引数にfunctionを実行
         $.getJSON("/message_ajax", {
             user_id: user_id
         }, function(data){
+            //console.log(`data=${data['data']}`);  //html
+            //console.log(`id=${data['checked_message_ids']}`);
             $('#message-form').before(data['data']);
+            let checked_message_ids = data['checked_message_ids'];
+            for (let idx=0; idx<checked_message_ids.length; idx++){
+                $('#self-message-tag-'+checked_message_ids[idx]).append('<p>既読</p>');
+            }
         });
     };
 </script>
@@ -25,8 +32,8 @@
 <div class="row">
     {% for message in messages %}
         {% if message.from_user_id == current_user.id %}
-        <div class="col-lg-1 offset-lg-6 col-md-1 offset-md-2 col-sm-1 offset-sm-1 col-1">
-            {% if message.is_read %}
+        <div id="self-message-tag-{{message.id}}" class="col-lg-1 offset-lg-6 col-md-1 offset-md-2 col-sm-1 offset-sm-1 col-1">
+            {% if message.is_checked %}
                 <p>既読</p>
             {% endif %}
         </div>
