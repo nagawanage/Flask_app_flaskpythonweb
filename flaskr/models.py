@@ -281,3 +281,12 @@ class Message(db.Model):
                 )
             )
         ).order_by(cls.id).all()
+
+    @classmethod
+    def update_is_read_by_ids(cls, ids):
+        # IN句
+        cls.query.filter(cls.id.in_(ids)).update(
+            {'is_read': 1},
+            # fetch: update前にselectで更新対象を取得. in_()を使う場合は指定
+            synchronize_session='fetch'
+        )
