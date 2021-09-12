@@ -4,11 +4,11 @@ from flask import (
     session
 )
 from flask_login import login_user, login_required, logout_user, current_user
-from flaskr.models import User, PasswordResetToken, UserConnect
+from flaskr.models import User, PasswordResetToken, UserConnect, Message
 from flaskr import db
 from flaskr.forms import (
     LoginForm, RegisterForm, ResetPasswordForm, ForgotPasswordForm, UserForm,
-    ChangePasswordForm, UserSearchForm, ConnectForm
+    ChangePasswordForm, UserSearchForm, ConnectForm, MessageForm
 )
 
 
@@ -197,6 +197,27 @@ def connect_user():
 
     next_url = session.pop('url', 'app:home')  # sessionから情報取得
     return redirect(url_for(next_url))
+
+
+@bp.route('/message/<id>', methods=['GET', 'POST'])
+@login_required
+def message(id):
+    if not UserConnect.is_friend(id):
+        return redirect(url_for('app.home'))  # homeにリダイレクト
+
+    form = MessageForm(request.form)
+    messages = Message.get_friend_messages(current_user.get_id(), id)
+    user = User.select_user_by_id(id)
+    if request.method == 'POST' and form.validate():
+        new_message = Message(current_user.get_id(), id, form.message.data)
+        with db.session.begin(subtransactions=True):
+            new_message.create_message()
+        db.session.commit()
+        # 保存したデータを読み込むためGETでリダイレクトする
+        return redirect(url_for('app.message', id=id))
+
+    return render_template(
+        'message.html', form=form, messages=messages, to_user_id=id, user=user)
 
 
 @bp.app_errorhandler(404)

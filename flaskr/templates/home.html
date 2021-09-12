@@ -27,7 +27,7 @@
                 <td></td>
                 {% endif %}
                 <td>{{ friend.username }}</td>
-                <td>メッセージを送る</td>
+                <td><a href="{{url_for('app.message', id=friend.id)}}" class="btn btn-link">メッセージを送る</a></td>
             </tr>
             {% endfor %}
         </table>

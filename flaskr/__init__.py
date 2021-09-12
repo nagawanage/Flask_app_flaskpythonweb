@@ -4,6 +4,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
+from flaskr.utils.template_filters import replace_newline
 
 
 # Flask-Loginライブラリとアプリケーションをつなぐ
@@ -26,6 +27,7 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     from flaskr.views import bp
     app.register_blueprint(bp)
+    app.add_template_filter(replace_newline)  # 自作フィルタを追加
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
