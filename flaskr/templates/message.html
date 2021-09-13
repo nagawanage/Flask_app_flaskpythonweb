@@ -13,6 +13,7 @@
         scroll.scrollTop = scroll.scrollHeight;
     });
     user_id = "{{ to_user_id }}";
+    offset_value = 1;
     function get_new_messages() {
         //URLからjsonを受け取りdataに格納 -> dataを引数にfunctionを実行
         $.getJSON("/message_ajax", {
@@ -27,10 +28,30 @@
             }
         });
     };
+    function load_old_messages(){
+        $.getJSON("/load_old_messages", {
+            user_id: user_id,
+            offset_value: offset_value
+        }, function(data){
+            if(data['data']){
+                hidden_id = "load_message_" + offset_value;
+                hidden_tag = '<div id="' + hidden_id + '"></div>'
+                $(hidden_tag).insertAfter('#load_message_button');
+                $(data['data']).insertAfter('#load_message_button');  //ボタンの下に古いメッセージを追加
+                $('body, html').animate({scrollTop: $("#" + hidden_id).offset().top}, 0);  //画面スクロール
+                offset_value += 1;
+            }
+        });
+    };
 </script>
 
 <div class="row">
-    {% for message in messages %}
+    <div id="load_message_button" class="col-12">
+        <button class="col-12 btn btn-light btn-outline-primary" onclick="load_old_messages();">
+            100件読み込む
+        </button>
+    </div>
+    {% for message in messages|reverse %}
         {% if message.from_user_id == current_user.id %}
         <div id="self-message-tag-{{message.id}}" class="col-lg-1 offset-lg-6 col-md-1 offset-md-2 col-sm-1 offset-sm-1 col-1">
             {% if message.is_checked %}

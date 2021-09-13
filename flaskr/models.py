@@ -8,7 +8,7 @@ from uuid import uuid4
 
 # テーブルjoin用
 from sqlalchemy.orm import aliased
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, desc
 
 
 @login_manager.user_loader
@@ -254,8 +254,8 @@ class Message(db.Model):
     to_user_id = db.Column(
         db.Integer, db.ForeignKey('users.id'), index=True
     )
-    is_read = db.Column(db.Boolean, default=False)
-    is_checked = db.Column(db.Boolean, default=False)  # 既読を確認したか
+    is_read = db.Column(db.Boolean, default=False)  # 1: 既読 0:
+    is_checked = db.Column(db.Boolean, default=False)  # 1: 既読確認済 0:
     message = db.Column(db.Text)
     create_at = db.Column(db.DateTime, default=datetime.now)
     update_at = db.Column(db.DateTime, default=datetime.now)
@@ -269,7 +269,7 @@ class Message(db.Model):
         db.session.add(self)
 
     @classmethod
-    def get_friend_messages(cls, id1, id2):
+    def get_friend_messages(cls, id1, id2, offset_value=0, limit_value=100):
         return cls.query.filter(
             or_(
                 and_(
@@ -281,7 +281,8 @@ class Message(db.Model):
                     cls.to_user_id == id1
                 )
             )
-        ).order_by(cls.id).all()
+        ).order_by(desc(cls.id)).offset(offset_value).limit(limit_value)  # 最新100件を取得
+        # offset: selectの開始位置
 
     @classmethod
     def update_is_read_by_ids(cls, ids):
