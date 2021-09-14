@@ -44,7 +44,7 @@ class User(UserMixin, db.Model):
         return cls.query.get(id)
 
     @classmethod
-    def search_by_name(cls, username):
+    def search_by_name(cls, username, page=1):
         user_connect1 = aliased(UserConnect)  # from_user_id=検索相手、to_user_id=ログインユーザでUserConnectに紐付ける
         user_connect2 = aliased(UserConnect)  # to_user_id=検索相手、from_user_id=ログインユーザでUserConnectに紐付ける
         # クエリ長いのはsql接続を1回だけにしたいため
@@ -69,7 +69,7 @@ class User(UserMixin, db.Model):
             cls.id, cls.username, cls.picture_path,
             user_connect1.status.label('joined_status_to_from'),  # AS
             user_connect2.status.label('joined_status_from_to'),  # AS
-        ).all()
+        ).order_by(cls.username).paginate(page, 50, False)  # page=2なら50〜100番目のレコードを取得
 
     @classmethod
     def select_friends(cls):
