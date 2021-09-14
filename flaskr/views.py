@@ -117,7 +117,7 @@ def forgot_password():
             db.session.commit()
             # 実際はメールで通知するべき
             request_url = f'http://localhost:5000/reset_password/{token}'
-            print(f'パスワード再登録用URL: ', request_url)
+            print('パスワード再登録用URL: ', request_url)
             flash('パスワード設定用URLを送信しました。ご確認ください。')
         else:
             flash('存在しないユーザです')
