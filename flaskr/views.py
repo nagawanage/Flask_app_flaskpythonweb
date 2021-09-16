@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask import (
     Blueprint, abort, request, render_template, redirect, url_for, flash,
-    session, jsonify
+    session, jsonify, current_app
 )
 from flask.helpers import make_response
 from flask_login import login_user, login_required, logout_user, current_user
@@ -20,6 +20,7 @@ bp = Blueprint('app', __name__, url_prefix='')
 
 @bp.route('/')
 def home():
+    current_app.logger.info('Home')
     friends = requested_friends = requesting_friends = None
     connect_form = ConnectForm()
     session['url'] = 'app.home'

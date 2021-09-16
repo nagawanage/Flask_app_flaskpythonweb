@@ -17,26 +17,16 @@ login_manager.login_message = 'ログインしてください'
 basedir = os.path.abspath(os.path.dirname(__name__))
 db = SQLAlchemy()
 migrate = Migrate()
-# config = {
-#     'develop': 'config/develop/settings.cfg',
-#     'prod': 'config/prod/settings.cfg'
-# }
 config_class = {
-    'develop': DevelopConfig,
-    'prod': ProdConfig
+    'development': DevelopConfig,
+    'production': ProdConfig
 }
 
 
 def create_app():
     app = Flask(__name__)
-    """config from dict"""
-    # config_file = config[os.getenv('ENVIRONMENT', 'develop')]
-    # app.config.from_pyfile(config_file)
-    # print(f'{config_file=}')
-    """config from env"""
-    # app.config.from_envvar('FLASK_CONFIG_ENV')
-    """config from class"""
-    config_target = config_class[os.getenv('ENVIRONMENT', 'develop')]
+    # read config from class
+    config_target = config_class[os.getenv('ENVIRONMENT', 'development')]
     app.config.from_object(config_target)
 
     from flaskr.views import bp
