@@ -306,3 +306,26 @@ def page_not_found(e):
 @bp.app_errorhandler(500)
 def server_error(e):
     return render_template('500.html'), 500
+
+
+@bp.before_request
+def before_request():
+    user_name = ''
+    if current_user.is_authenticated:
+        user_name = current_user.username
+
+    current_app.logger.info(
+        f'user: {user_name}, {request.remote_addr}, {request.method}, {request.url}, {request.data}'
+    )
+
+
+@bp.after_request
+def after_request(response):
+    user_name = ''
+    if current_user.is_authenticated:
+        user_name = current_user.username
+
+    current_app.logger.info(
+        f'user: {user_name}, {request.remote_addr}, {request.method}, {request.url}, {request.data}, {response.status}'
+    )
+    return response
