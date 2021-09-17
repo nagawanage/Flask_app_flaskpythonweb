@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask import (
     Blueprint, abort, request, render_template, redirect, url_for, flash,
-    session, jsonify, current_app
+    session, jsonify, current_app, g
 )
 from flask.helpers import make_response
 from flask_login import login_user, login_required, logout_user, current_user
@@ -14,6 +14,9 @@ from flaskr.forms import (
 from flaskr.utils.message_format import (
     make_message_format, make_old_message_format
 )
+import logging
+import time
+
 
 bp = Blueprint('app', __name__, url_prefix='')
 
@@ -310,6 +313,7 @@ def server_error(e):
 
 @bp.before_request
 def before_request():
+    g.start_time = time.time()
     user_name = ''
     if current_user.is_authenticated:
         user_name = current_user.username
@@ -328,4 +332,10 @@ def after_request(response):
     current_app.logger.info(
         f'user: {user_name}, {request.remote_addr}, {request.method}, {request.url}, {request.data}, {response.status}'
     )
+
+    end_time = time.time()
+    logging.getLogger('performance').info(
+        f'{request.method}, {request.url}, execution time = {end_time - g.start_time}'
+    )
+
     return response
