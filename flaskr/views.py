@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask import (
     Blueprint, abort, request, render_template, redirect, url_for, flash,
-    session, jsonify
+    session, jsonify, current_app, g
 )
 from flask.helpers import make_response
 from flask_login import login_user, login_required, logout_user, current_user
@@ -14,12 +14,16 @@ from flaskr.forms import (
 from flaskr.utils.message_format import (
     make_message_format, make_old_message_format
 )
+import logging
+import time
+
 
 bp = Blueprint('app', __name__, url_prefix='')
 
 
 @bp.route('/')
 def home():
+    current_app.logger.info('Home')
     friends = requested_friends = requesting_friends = None
     connect_form = ConnectForm()
     session['url'] = 'app.home'
@@ -305,3 +309,33 @@ def page_not_found(e):
 @bp.app_errorhandler(500)
 def server_error(e):
     return render_template('500.html'), 500
+
+
+@bp.before_request
+def before_request():
+    g.start_time = time.time()
+    user_name = ''
+    if current_user.is_authenticated:
+        user_name = current_user.username
+
+    current_app.logger.info(
+        f'user: {user_name}, {request.remote_addr}, {request.method}, {request.url}, {request.data}'
+    )
+
+
+@bp.after_request
+def after_request(response):
+    user_name = ''
+    if current_user.is_authenticated:
+        user_name = current_user.username
+
+    current_app.logger.info(
+        f'user: {user_name}, {request.remote_addr}, {request.method}, {request.url}, {request.data}, {response.status}'
+    )
+
+    end_time = time.time()
+    logging.getLogger('performance').info(
+        f'{request.method}, {request.url}, execution time = {end_time - g.start_time}'
+    )
+
+    return response
